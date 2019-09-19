@@ -6,22 +6,25 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { interval, Subject } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { interval, Subject, Observable } from 'rxjs';
+import { filter, map, repeatWhen, takeUntil } from 'rxjs/operators';
+import { DOMStream, Subscription, DOMStreamObservable } from 'vue-rx-decorators'
 
 @Component({
-    subscriptions: () => {
-        return {
-            count: interval(1000).pipe(
-                filter((n: number) => {
-                    return n % 2 !== 0
-                }),
-                map((n: number) => n * n)
-            )
-        }
-    }
 })
 export default class Home extends Vue {
-    public count: Number = 0;
+    private count: Number = 0;
+
+    @DOMStream()
+    private snooze$!: DOMStreamObservable<MouseEvent>;
+
+    created () {
+        let time = interval(1000);
+        time.pipe(
+            filter((n: number) => n % 2 !== 0),
+            map((n: number) => n * n),
+        )
+        .subscribe(t => this.count = t)
+    }
 }
 </script>
